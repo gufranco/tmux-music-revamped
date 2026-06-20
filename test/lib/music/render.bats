@@ -65,3 +65,33 @@ teardown() {
 @test "render.sh - music_render_text echoes its input" {
   [[ "$(music_render_text "hello")" == "hello" ]]
 }
+
+@test "render.sh - music_format_time formats seconds" {
+  [[ "$(music_format_time 83)" == "1:23" ]]
+  [[ "$(music_format_time 5)" == "0:05" ]]
+  [[ "$(music_format_time xx)" == "0:00" ]]
+}
+
+@test "render.sh - music_build_progress draws a proportional bar" {
+  [[ "$(music_build_progress 30 200 10 '#' '-')" == "#---------" ]]
+  [[ "$(music_build_progress 100 100 4 '#' '-')" == "####" ]]
+  [[ "$(music_build_progress 0 0 4 '#' '-')" == "----" ]]
+}
+
+@test "render.sh - music_render_progress is empty without a duration" {
+  [[ -z "$(music_render_progress 0 0)" ]]
+}
+
+@test "render.sh - music_render_progress honors options" {
+  set_tmux_option "@music_revamped_progress_width" "4"
+  set_tmux_option "@music_revamped_progress_full" "#"
+  set_tmux_option "@music_revamped_progress_empty" "-"
+  [[ "$(music_render_progress 50 100)" == "##--" ]]
+}
+
+@test "render.sh - music_render_time formats elapsed and duration" {
+  [[ -z "$(music_render_time 0 0)" ]]
+  [[ "$(music_render_time 30 200)" == "0:30/3:20" ]]
+  set_tmux_option "@music_revamped_time_format" "%s of %s"
+  [[ "$(music_render_time 30 200)" == "0:30 of 3:20" ]]
+}

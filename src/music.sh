@@ -34,6 +34,8 @@ music_refresh() {
   cache_set status "$(music_norm_status "${lines[0]:-}")"
   cache_set title "${lines[1]:-}"
   cache_set artist "${lines[2]:-}"
+  cache_set position "${lines[3]:-0}"
+  cache_set duration "${lines[4]:-0}"
 }
 
 music_tick() {
@@ -56,6 +58,8 @@ main() {
     status) music_render_text "$(cache_get status)" ;;
     title)  music_render_text "$(cache_get title)" ;;
     artist) music_render_text "$(cache_get artist)" ;;
+    progress) music_render_progress "$(cache_get position)" "$(cache_get duration)" ;;
+    time)   music_render_time "$(cache_get position)" "$(cache_get duration)" ;;
     *)      return 0 ;;
   esac
 }

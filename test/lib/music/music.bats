@@ -19,17 +19,66 @@ teardown() {
   [[ "$(music_norm_status weird)" == "unknown" ]]
 }
 
+@test "music.sh - parse_nowplaying builds a five-field record" {
+  local txt=$'Song\nBand\n1\n83.5\n240.0'
+  run parse_nowplaying "${txt}"
+  [[ "${lines[0]}" == "playing" ]]
+  [[ "${lines[1]}" == "Song" ]]
+  [[ "${lines[2]}" == "Band" ]]
+  [[ "${lines[3]}" == "83" ]]
+  [[ "${lines[4]}" == "240" ]]
+}
+
+@test "music.sh - parse_nowplaying is empty for a null title" {
+  [[ -z "$(parse_nowplaying $'null\n\n0\n0\n0')" ]]
+}
+
+@test "music.sh - parse_cmus builds a record" {
+  local txt=$'status playing\ntag title Song\ntag artist Band\nposition 30\nduration 200'
+  run parse_cmus "${txt}"
+  [[ "${lines[0]}" == "playing" ]]
+  [[ "${lines[1]}" == "Song" ]]
+  [[ "${lines[3]}" == "30" ]]
+  [[ "${lines[4]}" == "200" ]]
+}
+
+@test "music.sh - parse_cmus is empty when stopped" {
+  [[ -z "$(parse_cmus 'status stopped')" ]]
+}
+
+@test "music.sh - read_music uses nowplaying-cli on macOS" {
+  _PLATFORM_OS_CACHE="Darwin"
+  has_command() { [[ "$1" == "nowplaying-cli" ]]; }
+  _read_nowplaying() { printf 'Song\nBand\n1\n10.0\n200.0\n'; }
+  run read_music
+  [[ "${lines[0]}" == "playing" ]]
+  [[ "${lines[3]}" == "10" ]]
+}
+
 @test "music.sh - read_music uses playerctl when present" {
+  _PLATFORM_OS_CACHE="Linux"
   has_command() { [[ "$1" == "playerctl" ]]; }
   _read_playerctl_status() { echo "Playing"; }
-  _read_playerctl_meta() { case "$1" in title) echo "Song" ;; artist) echo "Band" ;; esac; }
+  _read_playerctl_meta() { case "$1" in title) echo "Song" ;; artist) echo "Band" ;; mpris:length) echo "200000000" ;; esac; }
+  _read_playerctl_position() { echo "30.5"; }
   run read_music
   [[ "${lines[0]}" == "Playing" ]]
   [[ "${lines[1]}" == "Song" ]]
-  [[ "${lines[2]}" == "Band" ]]
+  [[ "${lines[3]}" == "30" ]]
+  [[ "${lines[4]}" == "200" ]]
+}
+
+@test "music.sh - read_music uses cmus when present" {
+  _PLATFORM_OS_CACHE="Linux"
+  has_command() { [[ "$1" == "cmus-remote" ]]; }
+  _read_cmus() { printf 'status paused\ntag title S\ntag artist A\nposition 5\nduration 100\n'; }
+  run read_music
+  [[ "${lines[0]}" == "paused" ]]
+  [[ "${lines[1]}" == "S" ]]
 }
 
 @test "music.sh - read_music is empty when playerctl has no player" {
+  _PLATFORM_OS_CACHE="Linux"
   has_command() { [[ "$1" == "playerctl" ]]; }
   _read_playerctl_status() { echo ""; }
   run read_music
@@ -50,4 +99,14 @@ teardown() {
   has_command() { return 1; }
   run read_music
   [[ -z "${output}" ]]
+}
+
+@test "music.sh - host-probe seams are callable" {
+  run _read_playerctl_status
+  run _read_playerctl_meta title
+  run _read_playerctl_position
+  run _read_nowplaying
+  run _read_cmus
+  run _read_osascript
+  true
 }

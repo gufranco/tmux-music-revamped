@@ -14,6 +14,8 @@ placeholders=(
   "\#{music_status}"
   "\#{music_title}"
   "\#{music_artist}"
+  "\#{music_progress}"
+  "\#{music_time}"
 )
 
 commands=(
@@ -22,6 +24,8 @@ commands=(
   "#(${MUSIC_CMD} status)"
   "#(${MUSIC_CMD} title)"
   "#(${MUSIC_CMD} artist)"
+  "#(${MUSIC_CMD} progress)"
+  "#(${MUSIC_CMD} time)"
 )
 
 interpolate() {

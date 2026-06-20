@@ -51,7 +51,51 @@ music_render_text() {
   echo "${1}"
 }
 
+# music_format_time SECONDS -> "M:SS".
+music_format_time() {
+  local s="${1%%.*}"
+  [[ "${s}" =~ ^[0-9]+$ ]] || s=0
+  printf '%d:%02d' $(( s / 60 )) $(( s % 60 ))
+}
+
+# music_build_progress POS DUR WIDTH FULL EMPTY -> a progress bar string.
+music_build_progress() {
+  local pos="${1%%.*}" dur="${2%%.*}" width="${3:-10}" full="${4:-#}" empty="${5:--}"
+  [[ "${pos}" =~ ^[0-9]+$ ]] || pos=0
+  [[ "${dur}" =~ ^[0-9]+$ ]] || dur=0
+  [[ "${width}" =~ ^[0-9]+$ ]] || width=10
+  local filled=0
+  (( dur > 0 )) && filled=$(( (pos * width) / dur ))
+  (( filled > width )) && filled=width
+  (( filled < 0 )) && filled=0
+  local out="" i
+  for (( i = 0; i < filled; i++ )); do out+="${full}"; done
+  for (( i = filled; i < width; i++ )); do out+="${empty}"; done
+  echo "${out}"
+}
+
+music_render_progress() {
+  [[ -z "${2}" || "${2}" == "0" ]] && { echo ""; return 0; }
+  local width full empty
+  width=$(get_tmux_option "@music_revamped_progress_width" "10")
+  full=$(get_tmux_option "@music_revamped_progress_full" "█")
+  empty=$(get_tmux_option "@music_revamped_progress_empty" "░")
+  music_build_progress "${1}" "${2}" "${width}" "${full}" "${empty}"
+}
+
+music_render_time() {
+  [[ -z "${2}" || "${2}" == "0" ]] && { echo ""; return 0; }
+  local fmt
+  fmt=$(get_tmux_option "@music_revamped_time_format" "%s/%s")
+  # shellcheck disable=SC2059
+  printf "${fmt}" "$(music_format_time "${1}")" "$(music_format_time "${2}")"
+}
+
 export -f _music_truncate
 export -f music_render_now
 export -f music_render_icon
 export -f music_render_text
+export -f music_format_time
+export -f music_build_progress
+export -f music_render_progress
+export -f music_render_time

@@ -21,6 +21,8 @@ Built from
 | `#{music_status}` | `playing`, `paused`, `stopped`, or `unknown` |
 | `#{music_title}` | the track title |
 | `#{music_artist}` | the track artist |
+| `#{music_progress}` | a progress bar from elapsed and total time |
+| `#{music_time}` | elapsed and total time, for example `0:30/3:20` |
 
 ## Install
 
@@ -44,6 +46,10 @@ Press `prefix + I` to install.
 | `@music_revamped_paused_icon` | `\|\|` | icon while paused |
 | `@music_revamped_stopped_icon` | `[]` | icon while stopped |
 | `@music_revamped_unknown_icon` | empty | icon when no player is found |
+| `@music_revamped_progress_width` | `10` | cells in the progress bar |
+| `@music_revamped_progress_full` | `█` | filled progress cell |
+| `@music_revamped_progress_empty` | `░` | empty progress cell |
+| `@music_revamped_time_format` | `%s/%s` | format for elapsed and total time |
 | `@music_revamped_enable_logging` | `0` | set to `1` to log under `~/.tmux/music-revamped-logs` |
 
 ## Support by platform and architecture

@@ -25,9 +25,41 @@ music_norm_status() {
   esac
 }
 
+# parse_nowplaying TEXT -> five lines (status, title, artist, position, duration)
+# from `nowplaying-cli get title artist playbackRate elapsedTime duration`.
+parse_nowplaying() {
+  local title artist rate elapsed dur
+  title=$(sed -n '1p' <<< "${1}"); artist=$(sed -n '2p' <<< "${1}")
+  rate=$(sed -n '3p' <<< "${1}"); elapsed=$(sed -n '4p' <<< "${1}"); dur=$(sed -n '5p' <<< "${1}")
+  [[ -z "${title}" || "${title}" == "null" ]] && { echo ""; return 0; }
+  local status="paused"
+  [[ "${rate}" == "1" || "${rate}" == "1.0" ]] && status="playing"
+  printf '%s\n%s\n%s\n%s\n%s\n' "${status}" "${title}" "${artist}" "${elapsed%%.*}" "${dur%%.*}"
+}
+
+# parse_cmus TEXT -> five lines from `cmus-remote -Q`.
+parse_cmus() {
+  local st status title artist pos dur
+  st=$(printf '%s\n' "${1}" | grep '^status ' | head -1 | cut -d' ' -f2-)
+  case "${st}" in
+    playing) status="playing" ;;
+    paused)  status="paused" ;;
+    *)       echo ""; return 0 ;;
+  esac
+  title=$(printf '%s\n' "${1}" | grep '^tag title ' | head -1 | cut -d' ' -f3-)
+  artist=$(printf '%s\n' "${1}" | grep '^tag artist ' | head -1 | cut -d' ' -f3-)
+  pos=$(printf '%s\n' "${1}" | grep '^position ' | head -1 | cut -d' ' -f2)
+  dur=$(printf '%s\n' "${1}" | grep '^duration ' | head -1 | cut -d' ' -f2)
+  [[ -z "${title}" ]] && { echo ""; return 0; }
+  printf '%s\n%s\n%s\n%s\n%s\n' "${status}" "${title}" "${artist}" "${pos:-0}" "${dur:-0}"
+}
+
 # Host-probe seams.
 _read_playerctl_status() { playerctl status 2>/dev/null; }
 _read_playerctl_meta() { playerctl metadata "${1}" 2>/dev/null; }
+_read_playerctl_position() { playerctl position 2>/dev/null; }
+_read_nowplaying() { nowplaying-cli get title artist playbackRate elapsedTime duration 2>/dev/null; }
+_read_cmus() { cmus-remote -Q 2>/dev/null; }
 _read_osascript() {
   osascript 2>/dev/null <<'APPLESCRIPT'
 on run
@@ -43,21 +75,33 @@ end run
 APPLESCRIPT
 }
 
-# read_music -> three lines (status, title, artist), or nothing when idle.
+# read_music -> up to five lines (status, title, artist, position, duration), or
+# nothing when idle. Backends are tried in order of richness.
 read_music() {
-  if has_command playerctl; then
-    local status
+  if is_macos && has_command nowplaying-cli; then
+    parse_nowplaying "$(_read_nowplaying)"
+  elif has_command playerctl && [[ -n "$(_read_playerctl_status)" ]]; then
+    local status dur dur_us
     status=$(_read_playerctl_status)
-    [[ -z "${status}" ]] && return 0
-    printf '%s\n%s\n%s\n' \
-      "${status}" "$(_read_playerctl_meta title)" "$(_read_playerctl_meta artist)"
+    dur_us=$(_read_playerctl_meta mpris:length)
+    [[ "${dur_us}" =~ ^[0-9]+$ ]] && dur=$(( dur_us / 1000000 )) || dur=0
+    printf '%s\n%s\n%s\n%s\n%s\n' "${status}" \
+      "$(_read_playerctl_meta title)" "$(_read_playerctl_meta artist)" \
+      "$(_read_playerctl_position | cut -d. -f1)" "${dur}"
+  elif has_command cmus-remote; then
+    parse_cmus "$(_read_cmus)"
   elif is_macos && has_command osascript; then
     _read_osascript
   fi
 }
 
 export -f music_norm_status
+export -f parse_nowplaying
+export -f parse_cmus
 export -f _read_playerctl_status
 export -f _read_playerctl_meta
+export -f _read_playerctl_position
+export -f _read_nowplaying
+export -f _read_cmus
 export -f _read_osascript
 export -f read_music

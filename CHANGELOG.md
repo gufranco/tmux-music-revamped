@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-06-20
+
+### Added
+
+- `nowplaying-cli` backend on macOS (works on Apple Silicon, reads any app) and a
+  `cmus-remote` backend.
+- Elapsed and total time with a progress bar: `#{music_progress}` and
+  `#{music_time}`, sourced from the player position and duration.
+
 ## [1.0.0] - 2026-06-19
 
 ### Added

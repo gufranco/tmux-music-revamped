@@ -7,7 +7,7 @@ setup() {
   unset _MUSIC_REVAMPED_MUSIC_LOADED _MUSIC_REVAMPED_RENDER_LOADED
   export CACHE_SYNC=1
   source "${BATS_TEST_DIRNAME}/../../../src/music.sh"
-  read_music() { printf 'Playing\nSong\nBand\n'; }
+  read_music() { printf 'Playing\nSong\nBand\n30\n200\n'; }
 }
 
 teardown() {
@@ -30,11 +30,22 @@ teardown() {
   [[ "$(music_max_age)" == "3" ]]
 }
 
-@test "music.sh dispatcher - music_refresh caches status, title, artist" {
+@test "music.sh dispatcher - music_refresh caches every field" {
   music_refresh
   [[ "$(cache_get status)" == "playing" ]]
   [[ "$(cache_get title)" == "Song" ]]
   [[ "$(cache_get artist)" == "Band" ]]
+  [[ "$(cache_get position)" == "30" ]]
+  [[ "$(cache_get duration)" == "200" ]]
+}
+
+@test "music.sh dispatcher - progress and time render from the cache" {
+  set_tmux_option "@music_revamped_progress_full" "#"
+  set_tmux_option "@music_revamped_progress_empty" "-"
+  run main progress
+  [[ "${output}" == "#---------" ]]
+  run main time
+  [[ "${output}" == "0:30/3:20" ]]
 }
 
 @test "music.sh dispatcher - refresh subcommand caches values" {
