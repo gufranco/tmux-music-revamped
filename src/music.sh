@@ -27,8 +27,10 @@ music_max_age() {
 }
 
 music_refresh() {
-  local lines=()
-  mapfile -t lines < <(read_music)
+  local lines=() line
+  while IFS= read -r line; do
+    lines+=("${line}")
+  done < <(read_music)
   cache_set status "$(music_norm_status "${lines[0]:-}")"
   cache_set title "${lines[1]:-}"
   cache_set artist "${lines[2]:-}"
