@@ -33,6 +33,27 @@ teardown() {
   [[ -z "$(parse_nowplaying $'null\n\n0\n0\n0')" ]]
 }
 
+@test "music.sh - parse_osascript builds a five-field record" {
+  local txt=$'playing\nSong\nBand\n83.5\n240000'
+  run parse_osascript "${txt}"
+  [[ "${lines[0]}" == "playing" ]]
+  [[ "${lines[1]}" == "Song" ]]
+  [[ "${lines[2]}" == "Band" ]]
+  [[ "${lines[3]}" == "83" ]]
+  [[ "${lines[4]}" == "240" ]]
+}
+
+@test "music.sh - parse_osascript keeps seconds-scale duration" {
+  local txt=$'paused\nSong\nBand\n5.0\n200'
+  run parse_osascript "${txt}"
+  [[ "${lines[3]}" == "5" ]]
+  [[ "${lines[4]}" == "200" ]]
+}
+
+@test "music.sh - parse_osascript is empty for an empty title" {
+  [[ -z "$(parse_osascript $'playing\n\n\n0\n0')" ]]
+}
+
 @test "music.sh - parse_cmus builds a record" {
   local txt=$'status playing\ntag title Song\ntag artist Band\nposition 30\nduration 200'
   run parse_cmus "${txt}"
@@ -88,10 +109,20 @@ teardown() {
 @test "music.sh - read_music falls back to osascript on macOS" {
   _PLATFORM_OS_CACHE="Darwin"
   has_command() { [[ "$1" == "osascript" ]]; }
-  _read_osascript() { printf 'playing\nSong\nBand\n'; }
+  _read_osascript() { printf 'playing\nSong\nBand\n83.5\n240000\n'; }
   run read_music
   [[ "${lines[0]}" == "playing" ]]
   [[ "${lines[1]}" == "Song" ]]
+  [[ "${lines[3]}" == "83" ]]
+  [[ "${lines[4]}" == "240" ]]
+}
+
+@test "music.sh - read_music is empty when Spotify is not running" {
+  _PLATFORM_OS_CACHE="Darwin"
+  has_command() { [[ "$1" == "osascript" ]]; }
+  _read_osascript() { printf ''; }
+  run read_music
+  [[ -z "${output}" ]]
 }
 
 @test "music.sh - read_music is empty with no backend" {

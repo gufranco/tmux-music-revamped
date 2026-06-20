@@ -74,8 +74,9 @@ Press `prefix + I` to install.
 | macOS (Intel and Apple Silicon) | yes, Spotify via built-in AppleScript, or any player when `playerctl` is installed |
 
 `playerctl` is preferred wherever it is present. On macOS without `playerctl`,
-Spotify is read through AppleScript with no extra package. When no player is
-active the placeholders render empty.
+Spotify is read through AppleScript with no extra package, including the player
+position and track duration, so the progress bar and elapsed time work on that
+path too. When no player is active the placeholders render empty.
 
 ## Development
 

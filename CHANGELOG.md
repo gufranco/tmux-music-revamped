@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-20
+
+### Added
+
+- The macOS Spotify AppleScript backend now reads player position and track
+  duration, so `#{music_progress}` and `#{music_time}` work without
+  `nowplaying-cli`.
+
+### Fixed
+
+- Progress bar and elapsed time no longer render blank when Spotify is read via
+  AppleScript. Spotify's millisecond duration is converted to seconds.
+
 ## [1.1.0] - 2026-06-20
 
 ### Added

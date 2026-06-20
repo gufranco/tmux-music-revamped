@@ -37,6 +37,19 @@ parse_nowplaying() {
   printf '%s\n%s\n%s\n%s\n%s\n' "${status}" "${title}" "${artist}" "${elapsed%%.*}" "${dur%%.*}"
 }
 
+# parse_osascript TEXT -> five lines (status, title, artist, position, duration)
+# from the Spotify AppleScript probe. Position is float seconds; duration is
+# milliseconds when it looks like ms (value > 10000), divided by 1000.
+parse_osascript() {
+  local status title artist pos dur
+  status=$(sed -n '1p' <<< "${1}"); title=$(sed -n '2p' <<< "${1}")
+  artist=$(sed -n '3p' <<< "${1}"); pos=$(sed -n '4p' <<< "${1}"); dur=$(sed -n '5p' <<< "${1}")
+  [[ -z "${title}" ]] && { echo ""; return 0; }
+  pos="${pos%%.*}"; dur="${dur%%.*}"
+  [[ "${dur}" =~ ^[0-9]+$ && "${dur}" -gt 10000 ]] && dur=$(( dur / 1000 ))
+  printf '%s\n%s\n%s\n%s\n%s\n' "${status}" "${title}" "${artist}" "${pos:-0}" "${dur:-0}"
+}
+
 # parse_cmus TEXT -> five lines from `cmus-remote -Q`.
 parse_cmus() {
   local st status title artist pos dur
@@ -68,7 +81,9 @@ on run
       set st to player state as string
       set tt to name of current track
       set ar to artist of current track
-      return st & linefeed & tt & linefeed & ar
+      set pp to player position as string
+      set du to duration of current track as string
+      return st & linefeed & tt & linefeed & ar & linefeed & pp & linefeed & du
     end tell
   end if
 end run
@@ -91,12 +106,13 @@ read_music() {
   elif has_command cmus-remote; then
     parse_cmus "$(_read_cmus)"
   elif is_macos && has_command osascript; then
-    _read_osascript
+    parse_osascript "$(_read_osascript)"
   fi
 }
 
 export -f music_norm_status
 export -f parse_nowplaying
+export -f parse_osascript
 export -f parse_cmus
 export -f _read_playerctl_status
 export -f _read_playerctl_meta
