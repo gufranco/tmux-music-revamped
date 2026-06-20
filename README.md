@@ -1,5 +1,7 @@
 # tmux-music-revamped
 
+[![Tests](https://github.com/gufranco/tmux-music-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/gufranco/tmux-music-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Now playing in your tmux status bar, without ever blocking the status render.
 
 Media players are queried in a detached background worker; the status line reads
@@ -44,11 +46,16 @@ Press `prefix + I` to install.
 | `@music_revamped_unknown_icon` | empty | icon when no player is found |
 | `@music_revamped_enable_logging` | `0` | set to `1` to log under `~/.tmux/music-revamped-logs` |
 
-## Platform support
+## Support by platform and architecture
 
-`playerctl` is used where present, on Linux and on macOS when installed. On macOS
-without playerctl, Spotify is read through AppleScript. When no player is active
-the placeholders render empty.
+| Platform | Supported |
+|----------|-----------|
+| Linux (x86_64 and arm64) | yes, with `playerctl` installed |
+| macOS (Intel and Apple Silicon) | yes, Spotify via built-in AppleScript, or any player when `playerctl` is installed |
+
+`playerctl` is preferred wherever it is present. On macOS without `playerctl`,
+Spotify is read through AppleScript with no extra package. When no player is
+active the placeholders render empty.
 
 ## License
 
