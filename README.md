@@ -1,16 +1,30 @@
-# tmux-music-revamped
+<div align="center">
+
+<h1>tmux-music-revamped</h1>
+
+**Now playing in your tmux status bar, without ever blocking the status render.**
 
 [![Tests](https://github.com/gufranco/tmux-music-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/gufranco/tmux-music-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Now playing in your tmux status bar, without ever blocking the status render.
+</div>
 
-Media players are queried in a detached background worker; the status line reads
-the result from a tmux server user-option and returns instantly. Each backend
-probe carries a timeout so a hung player never stalls the bar. No temp files are
-used.
+**7** placeholders · **4** backends · **90** tests · **95%+** coverage
+
+Show the current track, a progress bar, and elapsed and total time across multiple media backends. Players are queried in a detached background worker, so the status line reads a cached value and returns instantly with no temp files.
 
 Built from
 [tmux-plugin-template](https://github.com/gufranco/tmux-plugin-template).
+
+<table>
+<tr>
+<td><b>Non-blocking</b><br/>The status line reads a cached tmux user-option and never waits on a player probe.</td>
+<td><b>No temp files</b><br/>Cached values live in tmux server options, so nothing is written to disk.</td>
+</tr>
+<tr>
+<td><b>Multiple players</b><br/>nowplaying-cli on macOS, playerctl and cmus on Linux, plus Spotify via AppleScript.</td>
+<td><b>Tested</b><br/>90 bats tests hold coverage at 95%+ across the shell sources.</td>
+</tr>
+</table>
 
 ## Placeholders
 
@@ -62,6 +76,16 @@ Press `prefix + I` to install.
 `playerctl` is preferred wherever it is present. On macOS without `playerctl`,
 Spotify is read through AppleScript with no extra package. When no player is
 active the placeholders render empty.
+
+## Development
+
+Run the tests, lint, and coverage:
+
+```sh
+make test
+make lint
+make coverage
+```
 
 ## License
 
