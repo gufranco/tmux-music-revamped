@@ -4,7 +4,7 @@
 
 **Now playing in your tmux status bar, without ever blocking the status render.**
 
-[![Tests](https://github.com/gufranco/tmux-music-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/gufranco/tmux-music-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)](CHANGELOG.md)
+[![Tests](https://github.com/tmux-revamped/tmux-music-revamped/actions/workflows/tests.yml/badge.svg)](https://github.com/tmux-revamped/tmux-music-revamped/actions/workflows/tests.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)](CHANGELOG.md)
 
 </div>
 
@@ -13,7 +13,7 @@
 Show the current track, a progress bar, and elapsed and total time across multiple media backends. Players are queried in a detached background worker, so the status line reads a cached value and returns instantly with no temp files.
 
 Built from
-[tmux-plugin-template](https://github.com/gufranco/tmux-plugin-template).
+[tmux-plugin-template](https://github.com/tmux-revamped/tmux-plugin-template).
 
 <table>
 <tr>
@@ -43,7 +43,7 @@ Built from
 With [TPM](https://github.com/tmux-plugins/tpm):
 
 ```tmux
-set -g @plugin 'gufranco/tmux-music-revamped'
+set -g @plugin 'tmux-revamped/tmux-music-revamped'
 set -g status-left '#{music_icon} #{music}'
 ```
 
